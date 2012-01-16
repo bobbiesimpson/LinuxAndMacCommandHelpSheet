@@ -1,0 +1,1874 @@
+\documentclass[a4paper, 10pt]{article}
+
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[total={6.5in,8.75in},top=4cm]{geometry}
+\usepackage{fancyhdr}
+\usepackage{fancyvrb}
+\newcommand{\mytilde}{$\sim$}
+\newcommand{\mytoprule}{\hrule\vspace{4mm}}
+\newcommand{\mybotrule}{\vspace{4mm}\hrule}
+
+\rhead{{\bf Computer command cheat sheet}}
+\pagestyle{fancy}
+
+\title{Computer commands that come in handy}
+\author{Robert Simpson}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Overview}
+This document is merely a collection of the Linux commands that I have used in the past and I have found it useful to write them down for future reference. Each command has all sorts of flags and extra parameters associated with it, but I have not included an exhaustive list here since they can be found readily on the internet. Instead, I just explain in simple terms what the command is and then give an example use.
+
+\section*{Linux}
+
+\mytoprule
+\subsection*{cd}
+Change to another directory. e.g. To change to a directory that is located from the root directory as documents/myfolder
+\begin{Verbatim}[commandchars=\\\{\}]
+cd \mytilde/documents/myfolder
+\end{Verbatim}
+\mybotrule
+
+\subsection*{ls}
+List the documents in the current directory. Quite simply:
+\begin{verbatim}
+ls
+\end{verbatim}
+Or, to find out detailed information about the files including chmod permissions:
+\begin{verbatim}
+ls -l
+\end{verbatim}
+Or even better, to list the files in the current directory using the long format, with the file size in a readable format, in order of reverse time
+\begin{verbatim}
+ls -lhtr
+\end{verbatim}
+If we wish to list only the directories in a folder, we can use pipes in the following way
+\begin{verbatim}
+ls -l | egrep '^d'
+\end{verbatim}
+or to just show files:
+\begin{verbatim}
+ls -l | egrep -v '^d'
+\end{verbatim}
+\mybotrule
+
+\subsection*{tail}
+\label{sec:tail}
+
+If we wish to show the bottom of a file on the terminal in
+``real-time'' (ie. if it gets updated through some other running
+process), we can type 
+\begin{verbatim}
+tail -f <name-of-file>
+\end{verbatim}
+
+\subsection*{Output to screen and file}
+\label{sec:output-screen-file}
+
+If we wish to ouput to both the screen and a file, we can use the
+``tee'' command which converts standard input to standard output. The
+full command will look something like:
+\begin{verbatim}
+./exec 2>&1 | tee -a output.log
+\end{verbatim}
+where ``exec'' is the executable we are running, the ``2>\&1'' says
+that error output is directed to standard output, we then ``pipe''
+this output into the tee command which converted this into a file. 
+
+\subsection*{nohup}
+This runs a process in the background and will not stop running if you log out of the console. It basically means ``no hang-up''.
+\begin{verbatim}
+nohup python myscript.py
+\end{verbatim}
+This would run a python script called ``myscript.py'' and would continue to run even if we shut down the console. Useful for scripts that are going to take a long time and for scripts that you execute on another machine.
+\mybotrule
+
+\subsection*{whois}
+A nice way to find information about a a registered URL including details about the person who owns the URL. For example
+\begin{verbatim}
+whois gnomehome.co.uk
+\end{verbatim}
+\mybotrule
+
+\subsection*{cat \& lpr}
+To print to a printer connected to another computer through SSH we type 
+\begin{verbatim}
+cat filename.pdf | ssh user@remotehost.org lpr
+\end{verbatim}
+\mybotrule
+
+\subsection*{xmodmap}
+Annoyingly, the default for the scroll button on the mouse on linux is to copy. To disable this, we type in the terminal
+\begin{verbatim}
+xmodmap -e pointer = ``1 9 3 4 5 6 7 8 2''
+\end{verbatim}
+which switches around buttons 2 and 9.
+\mybotrule
+
+
+
+
+
+\subsection*{Joining pdf files}
+The following commands can be used to join two pdf files
+\begin{verbatim}
+pdftk fly1.pdf fly2.pdf cat flyer_combined.pdf
+\end{verbatim}
+\mybotrule
+
+\subsection*{gcc and g++}
+These are used to compile C and C++ programs. eg.
+\begin{verbatim}
+g++ -c main.cpp
+\end{verbatim}
+where the -c flag is used to say that we are compiling. g++ actually comes under the general gcc (Gnu Compiler Collection) and when we use gcc to compile a c++ program we are acutally using g++ behind the scenes. However, they have subtle differences in usage, so be careful!
+\mybotrule
+
+\subsection*{Cmake}
+This is one of the most powerful programs that I have used while
+programming. Generally, the way that programs are created is that the
+source files are compiled and linked together by writing an
+appropriate Makefile. But once we start moving to other platforms with
+different compilers (usually termed ``build environments''), then we
+often encounter problems. To handle this, and therefore allow
+compilation in a platform-independent way, we use Cmake. 
+
+As an example, imagine a very simple file called main.cpp that resides
+in a directory called ``src''. In this directory we create a file
+called ``CMakeLists.txt'' which would look like this:
+\begin{verbatim}
+cmake_minimum_required( VERSION 2.6 )
+project( TESTER )
+
+add_executable( main main.cpp )
+\end{verbatim}
+The first line tell cmake which version to use, the second line gives
+a name to the project and the last line gives a name to
+the exectuable with the source files that we need to compile to
+produce the exectuable (binary). If our header files were kept in a
+different directory, then this would need to specified as
+\begin{verbatim}
+include_directories( ${TESTER_SOURCE_DIR}/include )
+\end{verbatim}
+Now you may ask why we would separate out the source files and header
+files in this manner? The reason is that we may wish to distribute
+our code  to other people without giving them our source files. We
+would create a  "library" (essentially all the source files compiled
+and then combined into a single file) along with the header files so
+that they know what the functions are.
+
+Once we have created our CMakeLists.txt file, then we may wish to
+create an exectuable (or binary as the programming guys call it) in a
+different directory from all our source code. We call this the build
+directory. So imagine the following:
+\begin{verbatim}
+cd ../
+mkdir build
+cd build
+\end{verbatim}
+We have just created a build directory and moved into it. We want to
+create the exectuable in this directory, so we run the following
+command
+\begin{verbatim}
+ccmake ../src
+\end{verbatim}
+(where ``myProgramFolder'' is the location of our CMakeLists.txt
+file). We see a user interface where certain options can be set, but
+we simply type 'c' to configure the build directory. We will then see
+list of entries with a * next to each to indicate it is new. We press
+'c' again to tell cmake to process each of these new entries. Finally press 'g' to exit the
+program and generate the cmake files. We should see a number of new files in the directory,
+including a Makefile. So just type
+\begin{verbatim}
+make
+\end{verbatim}
+and then an executable will be created in this directory. 
+
+\subsubsection*{Generating Xcode builds}
+\label{sec:gener-xcode-builds}
+
+Cmake also has the ability to generate Xcode builds which allows to
+work with our code in Xcode if we so wish. To do so, we change in to
+the build directory where we want the Xcode project to reside, and run
+the following command 
+\begin{verbatim}
+ccmake path/to/Src -G Xcode
+\end{verbatim}
+Running through the options in ccmake's gui (where 'c' must be pressed twice
+and then finally 'g'), we will see a .xcodeproj file. Open this up in
+Xcode and see all your code.
+
+One thing I did notice when going through the source file folders in
+Xcode was that the header files were not appearing. This is because we
+must add the header files to the ``add-executable()'' command in the
+CMakeList.txt file. So we might see something like
+\begin{verbatim}
+add_executable( main ${SOURCE_FILES} ${HEADER_FILES} )
+\end{verbatim}
+
+\subsubsection*{CMake uninstall}
+\label{sec:cmake-uninstall}
+
+The general idea with CMake is that you can create 'out-of-source'
+builds. That is, give a folder which contains all the header and
+source files for your project, you can create the libraries and
+executables in a seperate folder. With CMake we can also run the
+command
+\begin{verbatim}
+make install
+\end{verbatim}
+which will put the relevant header files, library files and
+exectuables in the installation directory we specified in the CMake
+build. However, in some Makefiles there is an option of uninstalling a
+program. This removes all the header files, library files and
+exectuables. CMake by deafult does not provide this facility, but we
+can get around this if we wish by modifying the CMakeLists.txt file
+and creating an input file in our source directory. But a much easier
+option is to simply run the following command in the build directory
+\begin{verbatim}
+xargs rm < install_manifest.txt 
+\end{verbatim}
+
+
+
+\subsection*{nm}
+Used to inspect an object file
+\begin{verbatim}
+nm objectFile.o
+\end{verbatim}
+Not entirely of much use to me at the moment, since I don't understand the output. But essentially, an object file is produced from a translation unit (ie. a source file which has been pre-processed with all header files included). Object files will then contain blanks which refer to other functions or variables in separate translation units. It is the job of the linker to fill in these gaps. 
+\mybotrule
+
+\subsection*{gprof}
+Used to profile an executable if compiled with g++ or gcc.
+
+If we wish to find out if a particular function is taking a lot of cycles in our exectuable, then we can use this program to give us more information on what functions are hogging the cpu. To use gprof, we need to include the flag -pg when we compile. So if we have a c++ file called main.cpp, then we would use gprof as follows:
+\begin{verbatim}
+g++ -Wall -pg -c main.cpp 
+\end{verbatim}
+This will compile the file. We then create the executable:
+\begin{verbatim}
+g++ -Wall -pg -o main main.o
+\end{verbatim}
+We run the exectuable to generate the profile
+\begin{verbatim}
+./main > output.txt
+\end{verbatim}
+(Here I have forced output to go to a file called output.txt). We then see the profile info by typing
+\begin{verbatim}
+gprof main
+\end{verbatim}
+And it should appear on the screen.
+
+An example make file for a program that consists of three files main.cpp, vector.h and vector.cpp is given below:
+
+\begin{verbatim}
+CC = g++
+CFLAGS = -Wall -pg
+
+OBJECTS = main.o vector.o
+
+main: $(OBJECTS)
+	$(CC) $(CFLAGS) -o main $(OBJECTS)
+
+main.o: vector.h
+	$(CC) $(CFLAGS) -c main.cpp
+vector.o: vector.h
+	$(CC) $(CFLAGS) -c vector.cpp
+clean:
+	rm -f *.o gmon.* output.txt
+\end{verbatim}
+
+More details given at 
+\begin{verbatim}
+http://www.cs.utah.edu/dept/old/texinfo/as/gprof.html#SEC2
+\end{verbatim}
+\mybotrule
+
+\subsection*{zip}
+
+Well, to make things easier when uploading images when submitting a journal (eg. to Comp Mech), it is convenient to use zip to compress the files and upload them as one. What I did (which was successful) was to compress all the figures which start with 2, 3, etc. and upload them in batches of 10 (or less). This can be done with the following command
+\begin{verbatim}
+zip archive.zip figure2*
+\end{verbatim}
+And all the figures that start with 'figure2' will be put in the zip file. 
+
+\subsection*{tar}
+
+To compress a folder into a ``tar'' archive, we can type the following
+\begin{verbatim}
+tar -zcvf nameOfCompressiveArchive.tar.gz folderToCompress
+\end{verbatim}
+And voila!, the folder will be compressed. The flags mean the following
+\begin{itemize}
+\item -z: use gzip for compression
+\item -c: create an archive file
+\item -v: verbose output
+\item -f: specify a file name
+\end{itemize}
+
+\subsubsection*{Uncompress tarball}
+\label{sec:uncompress-tarball}
+
+If we wish to uncompress a tar archive we can do the following
+\begin{verbatim}
+tar xvzf folderToUncompress.tar.gz
+\end{verbatim}
+As a side note, we do not need to precede the arguments with a dash,
+as long as they are 'clumped' together in what is known as the 'old
+style'. An equivalent 'new style' would be
+\begin{verbatim}
+tar -x -v -z -f folderToUncompress.tar.gz
+\end{verbatim}
+
+\subsubsection*{Inspect contents of tarball}
+\label{sec:insp-cont-tarb}
+
+To inspect the contents of a tarball, simply type
+\begin{verbatim}
+tar ztvf folderToInspect.tar.gz
+\end{verbatim}
+
+\subsection*{Diff}
+\label{sec:diff}
+
+The diff command is used to tell the differences between one file and
+another file (which we might have 'fixed'). We usually use the unified
+format, which means we must pass the 'u' flag to the command. To
+create a diff file we can do the following
+\begin{verbatim}
+diff -u originalFile.txt modifiedFile.txt > patch.txt
+\end{verbatim}
+This will output the diff command to a patch file that can be sent to
+other developers to use as a fix.
+
+We can also make a patch from an entire directory structure
+\begin{verbatim}
+diff -ur originalFolder modifiedFolder > patch.txt
+\end{verbatim}
+
+\subsection*{Patch}
+\label{sec:patch}
+
+And when we have a patch file we can incorporate the changes using the
+patch command as follows:
+\begin{verbatim}
+patch -p0 < patch.txt
+\end{verbatim}
+The 'p' flag tells the patch command to use the same directory
+structure for the existing directory and the patch directory. If, for
+instance we were to pass '-p1' then the first character of each of the
+directory names in the patch file would be omitted (ie. instead of
+using /user/Documents it would use user/Documents).
+
+\subsection*{sftp}
+Used to upload and downloade files between a remote server and local machine. First, we login
+\begin{verbatim}
+sftp gnome-im@gnome.im
+\end{verbatim}
+Then we are prompted for a password. One we are in, we see the prompt
+\begin{verbatim}
+sftp>
+\end{verbatim}
+We can type the following to see what files are in the current directory on the remote machine
+\begin{verbatim}
+ls
+\end{verbatim}
+Or by puting a 'bang' in front of the command we can see the local files
+\begin{verbatim}
+!ls
+\end{verbatim}
+We can print the working directory in the remote and local machines as
+\begin{verbatim}
+pwd
+\end{verbatim}
+\begin{verbatim}
+lpwd
+\end{verbatim}
+But the interesting feature is the ability to download and upload using the get and put commands
+eg.
+\begin{verbatim}
+put work.zip 
+\end{verbatim}
+This will upload the zip file to the current directory on the remote computer. 
+\mybotrule
+
+\vspace{10mm}
+\section*{Matlab}
+
+\mytoprule
+\subsection*{Find current users on licence (Linux)}
+If we want to find out who is using our current licence, first change directory to the matlab installation directory ie.
+\begin{Verbatim}[commandchars=\\\{\}]
+cd <installation directory>/matlab/etc
+\end{Verbatim}
+then we can type the following command 
+\begin{Verbatim}[commandchars=\\\{\}]
+./lmstat -a
+\end{Verbatim}
+which will list all sorts of details about the licence. 
+\mybotrule
+
+\mytoprule
+\subsection*{find}
+A very useful command that, on its own will return a matrix of all the nonzero indicies of a matrix. eg. 
+\begin{Verbatim}[commandchars=\\\{\}]
+find(a)
+\end{Verbatim}
+will return a matrix of the non-zero indices of the matrix a. It can also be used with a condition statement like
+\begin{Verbatim}[commandchars=\\\{\}]
+find(a > 0.5)
+\end{Verbatim}
+which will return all the indices of the matrix a which are greater than 0.5.
+\mybotrule
+
+\mytoprule
+\subsection*{setxor}
+Given two vectors A and B, this function will return the values that are NOT in the intersection of A and B. This has come in very hand for when I have a vector of nodes which defines the fixed nodes another vector which defines all the nodes in the domain. This function will return all the free nodes. 
+\begin{Verbatim}[commandchars=\\\{\}]
+A = [1 2 3 4 5 6 7];
+B = [2 4 6];
+C=setxor(A,B)  % C is printed which is given by C=[1 3 5 7]
+\end{Verbatim}
+Other functions similar to this are the functions \emph{intersect()} and \emph{union()}
+\mybotrule
+
+\mytoprule
+\subsection*{save}
+Useful for saving values to ASCII files that can be imported to other applications eg. for plotting
+\begin{Verbatim}[commandchars=\\\{\}]
+save 'export.dat' array -ASCII
+\end{Verbatim}
+\mybotrule
+
+
+\mytoprule
+\subsection*{Mex files}
+This is used to allow compiled c files to be integrated into matlab programs. Unfortunately it only works with gcc 4.1 so we need to do the following on a linux machine
+\begin{Verbatim}
+sudo apt-get install gcc-4.1
+\end{Verbatim}
+and then 
+\begin{Verbatim}
+mex -setup
+\end{Verbatim}
+This creates a file called mexopts.sh in the matlab home directory (which can be found by typing 'matlabroot'). Change the appropriate lines in this file (according to the computer architecture) to 
+\begin{Verbatim}
+CC ='gcc-4.1'
+\end{Verbatim}
+\mybotrule
+
+\subsection*{Delaunay Triangulation}
+This is what is used to great 'nice' triangular meshes that do not contain large angles. Say we have a set of nodes which are prescribed in the vectors $\mathbf{x}$ and $\mathbf{y}$, then we can create a triangulation very easily as
+\begin{verbatim}
+x = rand(100,1); y = rand(100,1);
+elConn = delaunay(x,y);
+triplot(elConn,x,y);
+\end{verbatim}
+
+But another function which is very useful is DelaunayTri() which allows us to set constaints on the boundary of the triangulation. The use of this becomes apparent when we start using more complicated geometries. We might use it in the following way
+\begin{verbatim}
+% assume we have nodes in the matrix, eg. nodes = [x1 y1; x2 y2; ... ; xn yn];
+
+% assume we have a boundary connectivity matrix, eg.boundConn = [1 2; 2 4; 4 6...];
+elConn = DelaunayTri(nodes(:,1), nodes(:,2), boundConn);
+IO = inOutStatus(elConn);
+triplot(dt(IO, :), elConn.X(:,1), elConn.X(:,2))
+\end{verbatim}
+
+\vspace{10mm}
+\section*{Cups network printing}
+\mytoprule
+
+To setup the CUPS printing system we need to do a few things. First off all, we need to edit a file located in 
+\begin{verbatim}
+/etc/cups/cupsd.conf
+\end{verbatim}
+
+My file looked like this
+\begin{verbatim}
+LogLevel warn
+MaxLogSize 0
+SystemGroup lpadmin
+# Allow remote access
+#Port 631
+Listen 131.251.176.142:631
+Listen /var/run/cups/cups.sock
+# Enable printer sharing and shared printers.
+Browsing On
+BrowseOrder allow,deny
+BrowseAllow all
+BrowseRemoteProtocols CUPS
+BrowseAddress @LOCAL
+BrowseLocalProtocols CUPS dnssd
+DefaultAuthType Basic
+<Location />
+  # Allow shared printing...
+  Order allow,deny
+  Allow @LOCAL
+  Allow 10.74.*
+  Allow 131.251.*
+  Allow 10.73.*
+  Allow 10.13.*
+</Location>
+<Location /admin>
+  # Restrict access to the admin pages...
+  Order allow,deny
+  Allow @LOCAL
+</Location>
+<Location /admin/conf>
+  AuthType Default
+  Require user @SYSTEM
+  # Restrict access to the configuration files...
+  Order allow,deny
+</Location>
+<Policy default>
+  <Limit Send-Document Send-URI Hold-Job Release-Job Restart-Job Purge-Jobs Set-Job-Attributes Create-Job-Subscription Renew-Subscription Cancel-Subscription Get-Notifications Reprocess-Job Cancel-Current-Job Suspend-Current-Job Resume-Job CUPS-Move-Job CUPS-Get-Document>
+    Require user @OWNER @SYSTEM
+    Order deny,allow
+  </Limit>
+  <Limit CUPS-Add-Modify-Printer CUPS-Delete-Printer CUPS-Add-Modify-Class CUPS-Delete-Class CUPS-Set-Default CUPS-Get-Devices>
+    AuthType Default
+    Require user @SYSTEM
+    Order deny,allow
+  </Limit>
+  <Limit Pause-Printer Resume-Printer Enable-Printer Disable-Printer Pause-Printer-After-Current-Job Hold-New-Jobs Release-Held-New-Jobs Deactivate-Printer Activate-Printer Restart-Printer Shutdown-Printer Startup-Printer Promote-Job Schedule-Job-After CUPS-Accept-Jobs CUPS-Reject-Jobs>
+    AuthType Default
+    Require user @SYSTEM
+    Order deny,allow
+  </Limit>
+  <Limit Cancel-Job CUPS-Authenticate-Job>
+    Require user @OWNER @SYSTEM
+    Order deny,allow
+  </Limit>
+  <Limit All>
+    Order deny,allow
+  </Limit>
+</Policy>
+<Policy authenticated>
+  <Limit Create-Job Print-Job Print-URI>
+  AuthType Default
+  Order deny,allow
+</Limit>
+  <Limit Send-Document Send-URI Hold-Job Release-Job Restart-Job Purge-Jobs Set-Job-Attributes Create-Job-Subscription Renew-Subscription Cancel-Subscription Get-Notifications Reprocess-Job Cancel-Current-Job Suspend-Current-Job Resume-Job CUPS-Move-Job CUPS-Get-Document>
+AuthType Default
+Require user @OWNER @SYSTEM
+Order deny,allow
+  </Limit>
+  <Limit CUPS-Add-Modify-Printer CUPS-Delete-Printer CUPS-Add-Modify-Class CUPS-Delete-Class CUPS-Set-Default>
+  AuthType Default
+  Require user @SYSTEM
+  Order deny,allow
+    </Limit>
+  <Limit Pause-Printer Resume-Printer Enable-Printer Disable-Printer Pause-Printer-After-Current-Job Hold-New-Jobs Release-Held-New-Jobs Deactivate-Printer Activate-Printer Restart-Printer Shutdown-Printer Startup-Printer Promote-Job Schedule-Job-After CUPS-Accept-Jobs CUPS-Reject-Jobs>
+    AuthType Default
+    Require user @SYSTEM
+    Order deny,allow
+      </Limit>
+  <Limit Cancel-Job CUPS-Authenticate-Job>
+      AuthType Default
+      Require user @OWNER @SYSTEM
+      Order deny,allow
+        </Limit>
+  <Limit All>
+        Order deny,allow
+          </Limit>
+</Policy>
+\end{verbatim}
+
+I then restarted Cups by typing the following command
+\begin{verbatim}
+sudo /etc/init.d/cups restart
+\end{verbatim}
+
+\mybotrule
+
+After a bit of faffing around I managed to configure a printer server on my linux machine so that others can use it. After installing it, it is a simple process of simply going to the url:
+\begin{verbatim}
+http://localhost:631
+\end{verbatim}
+and all the settings for modifying the printer server are there. Also to restart and stop the printer we can simply type in the command line
+\begin{verbatim}
+sudo /etc/init.d/cups restart
+sudo /etc/init.d/cups stop
+\end{verbatim}
+
+\subsection*{Windows}
+We can also connect windows machines to the CUPS server on my linux machine. To do this, we go through the ``add a printer'' option and then type in the URL:
+\begin{verbatim}
+http://131.251.176.142/printers/HP_LaserJet2055dn
+\end{verbatim}
+and we should be able to install an appropriate driver for the printer (HP).
+%
+
+\subsection*{Getting a mac to print to the printer through EDUROAM}
+
+I have also managed to get my mac to print through the linux server by doing the following
+\begin{enumerate}
+\item Open up a web-browser and type localhost:631
+\item Click 'Adding Printers and Classes'
+\item Click 'add a printer'
+\item Scroll down to 'Other Network Printers' and click 'Internet Printing Protocol (ipp)'
+\item In the box type 
+\begin{verbatim}
+ipp://131.251.176.142/printers/HP_LaserJet_P2055dn
+\end{verbatim}
+\item Click continue and then type in a name (something like ``RobsAmazingPrinter'') and a description (like ``HP Laser jet which is controlled by Rob'') and location (``Room 2.14'').
+\item Click continue and then go through the options to first select ``HP'' as the printer make and ``HP LaserJet 2055 duplexer'' as the printer
+\item Click ``add printer'' and then click ``set default options''
+\item Print a test page to see if it works. And if not, get in contact with me (robertnsimpson@gmail.com) 
+\end{enumerate}
+
+\mybotrule
+
+\vspace{10mm}
+\section*{Mac software}
+
+\mytoprule
+\subsection*{Adobe Illustrator (Mac)}
+To change to another open window we simply type the following command
+\begin{Verbatim}[commandchars=\\\{\}]
+cmd + ~
+\end{Verbatim}
+\mybotrule
+
+\subsection*{Pages}
+Sometimes if we want to put an umlaut over certain letters we can do the following: Type
+\begin{verbatim}
+ALT + u
+\end{verbatim}
+Then type the relevant letter you want the umlaut over.
+
+\mybotrule
+
+\vspace{10mm}
+\section*{Windows software}
+
+\subsection*{Rhino}
+\label{sec:rhino}
+
+To export an ``analysis-ready'' geometry from T-splines we issue the
+following secret command:
+\begin{verbatim}
+
+\end{verbatim}
+
+
+
+\mybotrule
+\vspace{10mm}
+\section*{Mac terminal commands}
+
+\mytoprule
+\subsection*{Moving to the end and beginning of a line in the termainl}
+Quite simply, we type ctrl-E to move to the end of the line and ctrl-A to move to the beginning. We can also delete the text on the current line by simply typing Ctrl-U.
+
+\subsection*{Open a package with default program}
+\begin{Verbatim}[commandchars=\\\{\}]
+open document.pdf
+\end{Verbatim}
+
+This will open the document.pdf with the default program on the mac. On mine, it was adobe reader. We can also specify the application to use with the -a flag. For instance,
+\begin{Verbatim}[commandchars=\\\{\}]
+open -a /Applications/TextWrangler.app foo.txt
+\end{Verbatim}
+
+\mybotrule
+
+\vspace{10mm}
+\section*{Diffpack}
+
+\mytoprule
+\subsection*{Installation}
+Now this is a task and a half. Having just about installed Diffpack on a Ubuntu machine I can say that there are a few things that were not immediately obvious to me during the process. Here are some pointers
+\begin{enumerate}
+\item The first thing to do is to copy the files from the cd to an appropriate directory. In all the examples given by Diffpack, it is installed in /usr/local/, so I just put the files there.
+\item I created a temporary folder called dptmp and within this I put the folder kernel (of the appropriate architecture type). eg. for a 32-bit linux system this folder is in the linux-gcc402 folder on the cd.
+\item We then issue the following command to run the installation script 
+\begin{verbatim}
+sh dptmp/kernel/install-dp.sh -r /usr/local -m linux-gcc-4.2.3 
+-s /usr/local/dptmp/kernel
+\end{verbatim}
+\item We now need to edit the .profile file by placing come lines at the end. We can edit it by typing {\bf sudo vi ~/.bashrc} (in the case of linux) or {\bf sudo vi ~/.profile} (for my mac). We then put the following lines at the end of the file
+\begin{verbatim}
+export NOR=/usr/local/NO
+export MACHINE_TYPE=linux-gcc-4.2.3
+. $NOR/etc/setup/dpshrc
+\end{verbatim} 
+\item We are now able to create a project with Diffpack by changing to a suitable directory and then issuing the command {\bf Mkdir newprojectname}. This will create a folder where we will store our source files. 
+\item We can create a file called {\bf newprojectname.cpp} and in this we can use all the various Diffpack classes and variable types to get a FE code running. Once we have saved the file we can compile and link the code just by simply typing {\bf Make}.
+\item However, on my first attempt it didn't compile straight away since there were several libraries that I needed to install. For example, I got the error about some library called -lXext - this is solved by going into the Ubuntu package manager, searching for the library and installing it. This may have to be done for several libraries\footnote{Some of the packages I needed to install were Xext, libxt6-dbg, libxt-dev, x11proto-xext-dev, tcl, osmesa, tk8}.
+\item Finally, it is necessary to get a licence key for Diffpack which requires both a hostname and hostid. We can get the hostname by typing {\bf uname -a}. But to get the hostid I need to change into the directory \$NOR/ext/FLEXlm/linux-gcc-4.0.2 and run the command {\bf ./lmutil lmhostid}
+\end{enumerate}
+
+\mytoprule
+\subsection*{Mac usage}
+
+To use Diffpack on a mac requires some extra little tricks to get things working. For a start, I had to modify my .profile file stored in my home directory (cd ~). I added the following lines
+\begin{verbatim}
+export PATH=.:$PATH
+export NOR=/usr/local/Diffpack/NO/
+export MACHINE_TYPE=mac-gcc-4.2
+. /usr/local/Diffpack/NO/etc/setup/dpshrc
+alias dmkdir='/usr/local/Diffpack/NO/bin/Mkdir'
+\end{verbatim}
+Notice the last line which creates an alias for the command 'Mkdir'. The command works in linux, but since the mac terminal is case-insensitive mkdir and Mkdir perform the same command. So I have made an alias called 'dmkdir'. When we run 
+\begin{verbatim}
+dmkdir project
+\end{verbatim}
+we will see that a directory is created with the appropriate make file. We can simply type 'make' to compile the source code with the diffpack library.
+\mybotrule
+
+
+\vspace{10mm}
+\section*{Latex}
+
+\mytoprule
+\subsection*{Changing the default font}
+Just type this in the preamble
+\begin{Verbatim}
+\renewcommand{\familydefault}{\sfdefault}
+\end{Verbatim}
+
+\mybotrule
+
+\vspace{10mm}
+\section*{Accelerate framework (Mac)}
+
+\mytoprule
+\subsection*{Compiling}
+If we have a project which is using the accelerate framework we can compile with the following
+\begin{Verbatim}
+gcc lapack.c -framework Accelerate -std=c99 -o lapackExample
+\end{Verbatim}
+We need to specifiy we are using the accelerate framework with the -framework flag. By specifying -std=c99 we are making sure that we are making the most of the latest compiler. The final flag specifies the output file. 
+\mybotrule
+
+
+\vspace{10mm}
+\section*{OOFEM}
+
+\mytoprule
+\subsection*{Installing}
+This is detailed in the readme file, but the basic steps are 
+\begin{Verbatim}
+untar -zxvf OOFEM.tar.gz
+./configure
+\end{Verbatim}
+we then go to the directory
+\begin{Verbatim}
+cd targets/default
+\end{Verbatim}
+and run the make file
+\begin{Verbatim}
+make
+\end{Verbatim}
+We can test it by running
+\begin{Verbatim}
+make tests
+\end{Verbatim}
+
+Now, in order to run the code, we fine that the executable is contained in targets/default/bin. To run it with an appropriate input file we place the input file next to the execuatble and run 
+\begin{Verbatim}
+./oofem
+\end{Verbatim}
+\mybotrule
+
+\vspace{10mm}
+\section*{GSL}
+
+\mytoprule
+\subsection*{Compiling and Linking}
+We can install this package through the package manager easiliy in Ubuntu, but it seems that it installs the headers in a path that is not recognised by the compiler. So to compile on my machine I had to type
+\begin{Verbatim}
+g++ -c hw.cpp 
+\end{Verbatim}
+And then to link
+\begin{Verbatim}
+g++ -L/usr/include/gsl hw.o -lm -lgsl -lgslcblas
+\end{Verbatim}
+Usually the libraries are kept in the path /usr/local/lib
+
+To get the same thing working on a mac I had to download gsl using macports and then I can compile the same program doing
+\begin{Verbatim}
+g++ -I/opt/local/include -c hw.cpp
+\end{Verbatim}
+And then to link
+\begin{Verbatim}
+g++ -L/opt/local/lib hw.o -lgsl -gslcblas -lm
+\end{Verbatim}
+Done!
+\mybotrule
+
+%
+
+\vspace{10mm}
+\section*{GIT}
+\mytoprule
+
+This is version control system that I am using to keep track of my isogeometric BEM code. By storing it on the GIThub, the code is opensource and available to all. It should make working on things colloboratively much easier in the future. 
+
+First of all, in order to contribute to Github you will need to set up an account at www.github.com. After this, I will be able to add you as a contributor to my project but otherwise, you will still be able to ``fetch'' code from the repository (read-only access). Let's assume you have an account on GIThub and you have gone through the setup up process on your machine (it is very well described by GIThub). You would get my isogeometric stuff as follows
+
+\subsection*{config}
+\label{sec:config}
+
+When we first use git on our machine we need to set up certain user
+defaults for the user email and username. To do this, we type
+\begin{verbatim}
+git config --global user.name = "Rob Simpson"
+git config --global user.email = "robertsimpson@gmail.com"
+\end{verbatim}
+And to see if our changes are correct, type
+\begin{verbatim}
+git config --global -l
+\end{verbatim}
+
+\subsection*{Clone}
+\begin{Verbatim}
+git clone git://github.com/bobbiesimpson/Isogeometric-BEM.git
+\end{Verbatim}
+
+This will create a directory along with all the files that are stored on the repository. It is good to read the README file to make sure that things will work correctly when you run the matlab scripts.
+
+One thing which puzzled me for a whle was the syntax ``git://'' with other terms like ``http://'' and ``ssh://'' also valid.This refers to the  \emph{transfer protocol} and if you want more details, then type in 
+\begin{verbatim}
+man git-clone
+\end{verbatim}
+and scroll down to read more.
+
+
+\subsection*{Add}
+\begin{Verbatim}
+git add isoBEM.m
+\end{Verbatim}
+
+Here, we have changed the file isoBEM.m and we have ``staged'' it. This means that we have included it in a snapshot that will be later included in future ``commits'' to the repository. Basically, every time we modify a file and we want those changes to be seen on the repo, we will call this command on those files.
+
+\subsubsection*{.gitignore}
+\label{sec:.gitignore}
+
+Sometimes there are files that we do not wish to include in our
+commits to the repository. What we can do is to create a file in the
+local working directory called 
+\begin{verbatim}
+.gitignore
+\end{verbatim}
+and put all the file types in here that we wish to exclude. For
+example, it might look like:
+\begin{verbatim}
+*.log
+*.gz
+*.bbl
+\end{verbatim}
+
+\subsection*{rm}
+\label{sec:gitrm}
+
+If we wish to remove items from the working tree, then we do not just
+simply use the rm command, since this will confuse git. Instead, we
+remove files using the following
+\begin{verbatim}
+git rm <fileToRemove>
+\end{verbatim}
+
+
+
+\subsection*{Status}
+\begin{Verbatim}
+git status -s
+\end{Verbatim}
+This will show which files are modified on our current branch and therefore will be included in our next commit. It is good to run this command before we do any commits.
+
+
+\subsection*{Diff}
+\begin{Verbatim}
+git diff
+\end{Verbatim}
+We can see what changes have been made before we do any commits. Another useful thing to do before a commit.
+
+
+\subsection*{Commit}
+\begin{Verbatim}
+git commit -m ``A relevant message is written here about the commit''
+\end{Verbatim}
+This command will actually put the changes we have marked in our snapshot onto the repository.
+
+One further comment which should be made on this command is the format of the messages submitted on the command line. I have found that git {\bf does not wrap words over lines} when you use the command git log. To over come this, when the message is being typed in during a commit, make sure to use a carriage return at appropriate points in the text. Then, when you look at the git logs, everything will appear in a nice format, rather than one, often very long, line.
+
+We can also commit while bypassing the need to add files to the
+staging area. This is achieved with the 'a' flag as follows:
+\begin{verbatim}
+git commit -am "A commit which does not require the add command"
+\end{verbatim}
+
+\subsection*{Log}
+\begin{Verbatim}
+git log
+\end{Verbatim}
+See all the commits that have taken place and who made them
+
+If we wish to see a (kindof) graphical output of the logs, we can type
+the following:
+\begin{verbatim}
+git log --oneline --graph
+\end{verbatim}
+
+\subsection*{Remote}
+
+\subsubsection*{Remote add}
+
+\begin{Verbatim}
+git remote add isobem git@github.com:bobbiesimpson/Isogeometric-BEM.git
+\end{Verbatim}
+This will add an alias for our remote repository - makes things a lot more convenient later on
+
+\subsubsection*{remote -v}
+\label{sec:remote-v}
+
+Just typing in 
+\begin{verbatim}
+git remote -v
+\end{verbatim}
+will show all the currently saved remotes and the URL for each.
+
+\subsection*{Push}
+\begin{Verbatim}
+git push isobem master
+\end{Verbatim}
+This will put all the changes we have made in the master branch onto the remote repository. This can be seen by all on Github!
+
+
+\subsection*{Fetch}
+\begin{Verbatim}
+git fetch isobem 
+\end{Verbatim}
+This will grab all the changes made as seen on the remote repository
+
+\subsection*{Merge}
+\begin{Verbatim}
+git merge isobem/master
+\end{Verbatim}
+This will follow a Fetch command and will merge the remote changes
+into the current branch
+
+This can also be performed using the following command
+\begin{verbatim}
+git pull . /remotes/isobem/master
+\end{verbatim}
+which can be read as ``pull from the remote (located in the current
+directory) from the branch master and merge with the current branch''.
+
+\subsection*{Rebase}
+\label{sec:rebase}
+
+This is a slightly more advanced command that is similar to
+merge. Instead of taking out latest local commit and then applying the
+merge on top of this version, rebase will 'roll back' our code to a
+suitable point at which the remote code can be added. Then the changes
+are added and our local changes are added on top. This has the
+potential to lose some of our commits (I think) but keep the log much
+cleaner.
+
+We use it like so (after perfomring a fetch):
+\begin{verbatim}
+git rebase isobem/master
+\end{verbatim}
+which is very similar to merge, but with very different consequences. 
+
+
+\subsection*{Pull}
+\label{sec:pull}
+
+We can also combine the previous two commands into one using 
+\begin{verbatim}
+git pull isobem master
+\end{verbatim}
+which merges the branch on the server (isobem) into the current
+working branch. 
+
+
+\subsection*{remote branches}
+\begin{Verbatim}
+git branch -r
+\end{Verbatim}
+Will show the remote branches
+
+
+\subsection{Creating a remote repository}
+\label{sec:creat-remote-repos}
+
+Sometimes we want to create a remote repository on a server so that we
+can do wonderful things like collaborative paper writing using version
+control. Let's assume that we are starting from scratch and therefore
+wish to create an empty repository on the server. First of all, let's
+create a git repo on our local machine which will contain the files
+that will initialise the remote repo.
+\begin{verbatim}
+<on the local machine>
+mkdir myrepo
+cd myrepo
+<add some files>
+git init
+git add .
+git commit -m "Start of my repo"
+\end{verbatim}
+Now log-in to the remote machine through SSH and create a new
+repository folder
+\begin{verbatim}
+mkdir myrepo.git
+cd newrepo.git
+git --bare init
+\end{verbatim}
+
+To make things easier on the local machine, we can create an alias for
+the remote server as
+\begin{verbatim}
+git remote add origin ssh://gnome-im@gnome.im/home/gnome-im/gitrepos/marking/MSc/Y3_briefs_2011.git
+\end{verbatim}
+
+We are now in a position to ``push'' our local files to the remote
+repo as
+\begin{verbatim}
+git push origin master
+\end{verbatim}
+and now people can ``clone'' the git repo from the remote server using
+the ``clone'' command as detailed above.
+
+\subsubsection*{Push with 'u' flag}
+\label{sec:push}
+
+When we push to a repository for the first time, it is often a good
+idea to specify the 'u' flag as follows:
+\begin{verbatim}
+git push -u origin master
+\end{verbatim}
+This essentially sets up a relationship between the remote branch and
+the local branch so that if you want to pull from the remote, you can
+simply type
+\begin{verbatim}
+git pull
+\end{verbatim}
+(assuming you are currently in the relevenat local branch).
+
+\subsection*{Blame}
+\label{sec:blame}
+
+To find out who changed a file and what they changed, we type
+\begin{verbatim}
+git blame fileToInspect.txt
+\end{verbatim}
+and we will see the relevant output on the screen.
+
+\subsection*{format-patch}
+\label{sec:format-patch}
+
+To create a patch after adding and commiting changes to the repo, we
+can create a patch file as follows
+\begin{verbatim}
+git format-patch origin/master
+\end{verbatim}
+and it will be created with an appropriately named file.
+
+{10mm}
+\section*{opennurbs}
+
+This rather neat library which has been written by the guys at Rhino allows us to interface with CAD obtaining all the necessary data to construct NURBS etc. This is especially useful for the isogeometric analysis side of things. But to get things working it is necessary to know a few details.
+
+\subsection*{Xcode}
+We can use opennurbs as long as we do two things - include the static library and let xcode know where the header files are. To link the library we can do the following
+\begin{itemize}
+\item Click on the ``target'' and the click ``info''
+\item Browse to where the file ``libopennurbs.a'' resides and add it to the linked libraries section
+\end{itemize}
+
+However, if the library resides in a system directory like /usr/local/lib then we can go the ``build'' section and add the following to the ``library search paths'': /usr/local/lib
+
+We also need to specify where the header files are, and to do this we edit the ``header search paths'': /Users/Robert/Documents/Work/Cardiff/Lectureship/ResearchTopics/isogeometric/code/opennurbs
+
+Finally, we must specify a linker option which we type into the ``other linker flags'': -lopennurbs
+
+Hopefully the program should now compile.
+
+\subsection*{Mac (terminal)}
+
+I managed to get a code to run which was compiled in the terminal and linked against the openNURBS static library. To do this, we first need to build the openNURBS library, which is done by changing into the directory containing the openNURBS source code and typing 'make'. Then, we can create code which uses the openNURBS library by including the following header:
+\begin{verbatim}
+#include opennurbs.h
+\end{verbatim}
+We can then compile the file (in this case it is called main.cpp) in the following way
+\begin{verbatim}
+g++ -Wall -I/<path_to_header_files> -L/<path_to_library_file> main.cpp -lopenNURBS -o main
+\end{verbatim}
+where the -I flag specifies the path to the openNURBS header files and the -L flag specifies the path to the static openNURBS library (libopenNURBS.a). We link with the library using the -l flag and create an executable called main.
+
+\subsection*{Linux}
+
+I've also got it to work on Linux. But since I copied the files across from my mac, it was first necessary to run (after changing into the opennurbs directory)
+\begin{Verbatim}
+make clean
+\end{Verbatim}
+Then it is a simple case of running
+\begin{Verbatim}
+make
+\end{Verbatim}
+
+Note that when linking with the static library we must use the flag
+\begin{Verbatim}
+-lopenNURBS
+\end{Verbatim}
+which differs from the mac version 
+\begin{Verbatim}
+-lopennurbs
+\end{Verbatim}
+
+\mybotrule
+
+\vspace{10mm}
+\section*{Eigen C++ library}
+\begin{verbatim}
+http://eigen.tuxfamily.org/index.php?title=Main_Page
+\end{verbatim}
+
+This library is a collection of classes that allow matrices to be stored and provides routines for solving linear systems of equations. It can almost be viewed as an extension of the STD library (e.g. the <vector> class). In order to install it, download the code from the website (given above) and then we use the library in one of two ways:
+\begin{enumerate}
+\item Include the ``eigen'' folder that you downloaded in the same folder that the code you are compiling. We can then simply run  e.g.
+\begin{Verbatim}
+g++ -Wall main.cpp -o main
+\end{Verbatim}
+If the folder is stored somewhere else, then we would explicty need to specify the include path
+\begin{Verbatim}
+g++ -Wall -I /path/to/eigen/folder main.cpp -o main
+\end{Verbatim}
+\item We can copy the eigen folder to the include directory on your system. On my mac, this was in /usr/local/include . After this, we can simply run the first command given above (where we do no need to specify the include path since by default, the compiler will look in /usr/local/include)
+\end{enumerate}
+
+\mybotrule
+
+
+\vspace{10mm}
+\section*{SHELLs}
+
+\subsection*{echo}
+It appears that the default shell on my mac is bash, but to see what shell you are using, simply type
+\begin{verbatim}
+echo $SHELL
+\end{verbatim}
+Or, to display special characters like newline, we can type
+\begin{verbatim}
+echo -e 'Display text with a newline \n'
+\end{verbatim}
+
+\subsection{Echo the return code of an exectuable}
+You may notice that the function main() in C and C++ programs has a return type of int. This value is known as the exit code. To query what an executable has returned, we can simply type
+\begin{verbatim}
+echo $?
+\end{verbatim}
+
+\subsection*{Crontab}
+
+This is a very useful program that allows shells scripts to be executed at a specified time. One reason that I have wanted to do this is to backup my files and then send them to a server. We can create a crontab as follows. Type
+\begin{Verbatim}
+crontab -e
+\end{Verbatim}
+in bash. Then we can create a lines as follows:
+\begin{Verbatim}
+0 13 * * * ~/Documents/backup.sh >> ~/Documents/backupLogfile.log 2>&1
+\end{Verbatim}
+This executes the script backup at the first minute of 1300 everyday and appends the results to a logfile. There is also an additional command at the end ``2$>$\&1'' which means that standard error output is directed into standard output. The flags for standard input/output are as follows:
+\begin{table}[htdp]
+\caption{Std input/output flags}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+STDIN & 0\\
+STDOUT & 1\\
+STDERR & 2\\
+\hline
+\end{tabular}
+\end{center}
+\label{default}
+\end{table}%
+By default, STDOUT is chosen.
+
+
+\subsection*{Backup Shell Script}
+
+Following on from the previous section, we can look into the backup script uses rsync to see what files have been updated and send the appropriate files across to a remote machine. It works like this:
+\begin{Verbatim}
+#!/bin/bash
+
+if rsync -va ~/Documents/Work ssh robert@131.251.176.142:Documents/LaptopBackup
+then echo 'upload successful'
+else echo 'problem uploading'
+fi
+
+date
+\end{Verbatim}
+The rsync function is called with two arguments -v (verbose mode) and -a (archive mode where all permissions, symbolic links are preserved). The files are transferred to a remote machine into the folder /Documents/LaptopBackup. A error/success message is printed and finally, the date is printed. 
+
+
+\subsection*{ssh-keygen}
+
+In the previous bash script the rsync function was used without any
+need for a password. This is because I used secure id\_rsa based
+authentication. This is the recommended way of connecting through ssh
+since essentially we are setting up a lock and key system, where the
+public key corresponds to a unique lock, and the private key (stored
+on our local computer) corresponds to the key. The system relies on making two files:  a private key and a public key. We can do this as follows: first, 
+\begin{verbatim}
+ssh-keygen -t rsa -b 2048 -f ~/.ssh/id_rsa
+\end{verbatim}
+Now, a small point. I \emph{did not use a passphrase when generating this key for the above bash script}. This might seem like a compromise on security, but it makes things a lot easier when using the crontab, since if we \emph{do} use a passphrase, then the crontab cannot login using ssh and the bash script will fail. There are ways around this (http://meinit.nl/using-rsync-from-cron-with-ssh-keys-that-have-a-passphrase), but I have not implemented them.
+
+This will generate two files in the .ssh folder: is\_rsa (private key) and id\_rsa.pub (public key). The 2048 means that it is generated using a 2048 bit key. We then create a file called ``authorized\_keys'' by 
+\begin{verbatim}
+touch ~/.ssh/authorized_keys
+\end{verbatim}
+Then change the permissions to make it execuatable
+\begin{verbatim}
+chmod 600 ~/.ssh/authorized_keys
+\end{verbatim}
+
+
+Then append the public key just generated to this file
+\begin{verbatim}
+cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+\end{verbatim}
+
+Apparently on some systems we need to uncomment a line in /etc/ssh/ssh\_config
+\begin{verbatim}
+# IdentityFile ~/.ssh/id_rsa
+\end{verbatim}
+(But I didn't need to do this on the mac)
+
+Now we upload the authorized keys to the server (assuming the dirtory ~/.ssh exists)
+\begin{verbatim}
+stfp> put ~/.ssh/authorized_keys .ssh/authorized_keys
+\end{verbatim}
+(or just use an FTP client like FUGU)
+
+We can now check if everything works if we try logging in using
+ssh. If all is well, we shouldn't need a password.
+
+
+
+\subsection*{Ubuntu version of settoing up SSH keys}
+\label{sec:ubuntu-vers-sett}
+
+Ubuntu also has a very nice tutorial on how to set up keys for
+securely logging in with SSH. It essentially does the same thing and
+can be summarised as follows:
+
+If the directory
+\begin{verbatim}
+~/.ssh
+\end{verbatim}
+doesn't exist, then create it and give it executable permissions with 
+\begin{verbatim}
+chmod 700 ~/.ssh
+\end{verbatim}
+We then simply create a key with 
+\begin{verbatim}
+ssh-keygen -t rsa
+\end{verbatim}
+which will prompt us for a password. Type one in if you wish, but it
+is not required. The consequence of typing one in now will be that a
+password will be need to be entered every time you connect using SSH.
+
+A more secure option is to use more bits to genereate the key with 
+\begin{verbatim}
+ssh-keygen -t rsa -b 4096
+\end{verbatim}
+
+We now transfer the public key to the required server with 
+\begin{verbatim}
+ssh-copy-id user@server.com
+\end{verbatim}
+and we should be able to access the server through ssh and our newly
+generated key with
+\begin{verbatim}
+ssh user@server.com
+\end{verbatim}
+
+
+\subsection*{Creating alias for ssh}
+
+Rather than having to type in ``ssh robert@131.251.176.142'' we can create an alias instead. Open, or create the file 
+\begin{verbatim}
+~/.ssh/config
+\end{verbatim}
+Then add the following lines (for example)
+\begin{verbatim}
+Host=linuxBox
+Hostname=131.251.176.142
+User=robert
+\end{verbatim}
+We can then connect simply by typing
+\begin{verbatim}
+ssh linuxBox
+\end{verbatim}
+
+\section*{/dev/null/}
+
+This is a special file that discards all data written to it eg.
+\begin{verbatim}
+cat /dev/null > fileToDeleteContents.txt
+\end{verbatim}
+This will delete the contents of the file 'fileToDeleteContents.txt'
+
+\section*{Ubuntu}
+
+\subsection*{Command line mode}
+
+Simply type Alt + F2 and you will be there!
+
+\section*{GPU programming}
+
+\subsection*{Installation of CUDA}
+
+Quite simply, the documentation provided by NVIDIA is excellent. And so go to
+\begin{verbatim}
+ http://developer.nvidia.com/cuda-toolkit-40
+ \end{verbatim}
+and download the relevant package for your system.
+
+\subsubsection*{Installation on Mac OS X}
+\label{sec:installation-mac-os}
+
+When we install on the mac, the installation directory (on my machine
+is kept at)
+\begin{verbatim}
+/Developer-3.2.6/GPU Computing
+\end{verbatim}
+
+\subsection*{Using CMake with CUDA}
+\label{sec:using-cmake-with}
+
+After a bit of faffing around, I have got CMake working with CUDA. If
+we have a file called vectorAddition.cu that uses cuda code, then we
+can create a CMakeLists.txt file as follows:
+
+\begin{verbatim}
+PROJECT( vectorAddition )
+CMAKE_MINIMUM_REQUIRED( VERSION 2.8 )
+
+FIND_PACKAGE( CUDA )
+
+IF ( APPLE )
+   FIND_LIBRARY(CUDA_CUTIL_LIBRARY NAMES cutil_i386 HINTS "${CUDA_SDK_ROOT_DIR}/C/lib")
+ELSE( APPLE )
+   FIND_LIBRARY(CUDA_CUTIL_LIBRARY NAMES cutil HINTS "${CUDA_SDK_ROOT_DIR}/C/lib")
+ENDIF( APPLE) 
+
+CUDA_ADD_EXECUTABLE( vectorAddition vectorAddition.cu )
+
+TARGET_LINK_LIBRARIES(vectorAddition ${CUDA_CUTIL_LIBRARY})
+\end{verbatim}
+
+Notice that there is an if statement to take account of the fact the
+mac version of cuda is 32 bit and therefore the library name is
+different. 
+
+\subsubsection*{A few pointers when incorporating CUDA in an existing c++ project}
+\label{sec:few-pointers-when}
+
+One of the key requirement when using CUDA is that is can be
+incorporated into an existing C or C++ project. Once you know what to
+do though, this task is actually than you first might think. Some of
+the commands which might help include the following:
+\begin{verbatim}
+OPTION( BUILD_WITH_CUDA "Build with cuda" OFF )
+IF ( BUILD_WITH_CUDA )
+ # Set up CUDA package
+ FIND_PACKAGE( CUDA )
+ENDIF( BUILD_WITH_CUDA )
+\end{verbatim}
+which sets up an option to build with or without cuda.
+
+\begin{verbatim}
+CMAKE_ADD_LIBRARY()
+\end{verbatim}
+which creates a library using the nvcc compiler
+
+\begin{verbatim}
+CMAKE_ADD_EXECUTABLE()
+\end{verbatim}
+which creates an executable using nvcc.
+\section*{VI/VIM commands}
+
+\subsection*{vimrc config file (mac)}
+
+The config file for the mac is stored in 
+\begin{verbatim}
+/usr/share/vim
+\end{verbatim}
+We edit the config file by typing
+\begin{verbatim}
+sudo vi vimrc
+\end{verbatim}
+
+We can change things like tab spacing and shift width in this file. And also enable syntax highlighting by default. This is what mine looks like
+\begin{verbatim}
+" Configuration file for vim
+set modelines=0     " CVE-2007-2438
+
+" Normally we use vim-extensions. If you want true vi-compatibility
+" remove change the following statements
+set nocompatible    " Use Vim defaults instead of 100% vi compatibility
+set backspace=2     " more powerful backspacing
+set ts=4
+set sw=4
+set ai
+syntax on
+
+" Don't write backup file if vim is being called by "crontab -e"
+au BufWrite /private/tmp/crontab.* set nowritebackup
+" Don't write backup file if vim is being called by "chpass"
+au BufWrite /private/etc/pw.* set nowritebackup
+\end{verbatim}
+The lines that I added were the ``ts'' (tab spacing), ``sw'' (shift width), ``ai'' (auto indent) and ``syntax on'' (syntax highlighting).
+ 
+\subsection*{Indent}
+To index 5 lines we type
+\begin{verbatim}
+5>>
+ \end{verbatim}
+and to deindent we type
+\begin{verbatim}
+5<<
+ \end{verbatim}
+
+\section*{Emacs (or aquamacs)}
+
+\subsection*{Ubuntu customisation}
+\label{sec:ubuntu-customisation}
+
+To customise emacs for Ubuntu we need to put the preferences in the
+following file:
+\begin{verbatim}
+~/.emacs.d/init.el
+\end{verbatim}
+
+I also found that some annoying message came up if I ran emacs from
+the command line. But after doing some searching on the internet, some
+people had answered my question. What I found that you need to modify
+the file located at
+\begin{verbatim}
+/usr/share/themes/Ambiance/gtk-2.0/gtkrc
+\end{verbatim}
+and change the line 
+\begin{verbatim}
+GtkRange::trough-under-steppers = 0
+\end{verbatim}
+to 
+\begin{verbatim}
+GtkRange::trough-under-steppers = 1.
+\end{verbatim}
+
+
+
+\subsection*{Aquamacs customisation}
+\label{sec:ubuntu-customisation}
+
+To customise emacs for Aquamacs we need to put the preferences in the
+following file:
+\begin{verbatim}
+~/Library/Preferences/Aquamacs\ Emacs/Preferences.el
+\end{verbatim}
+
+Emacs is the editor which is preferred by programmers and using the ctrl and alt keys instead of being in certain ``modes'' as in VI. There are a few commands which I have picked up. The letter``c'' denotes the ctrl key is pressed, and ``m'' denotes that the alt key is pressed.
+
+\subsection*{Moving around}
+\begin{verbatim}
+c-v : Move down one screen
+m-v : Move up one screen
+c-l : Move screen around cursor
+ \end{verbatim}
+ 
+ \begin{verbatim}
+c-n : Move to next line
+c-p : Move to previous line
+c-f : Move forward one character
+c-b : Move backward one character
+ \end{verbatim}
+ 
+ \begin{verbatim}
+m-f : Move forward one word
+m-b : Move backward one word
+ \end{verbatim}
+ 
+  \begin{verbatim}
+c-a : Move to beginning of line
+c-e : Move to end of line
+ \end{verbatim}
+ 
+  \begin{verbatim}
+m - a : Move to beginning of sentence
+m - e : Move to end of sentence.
+ \end{verbatim}
+ 
+  \begin{verbatim}
+m-< : Move to beginning of file
+m-> : Move to end of file
+ \end{verbatim}
+ 
+ \subsection*{Repeat commands}
+ 
+  \begin{verbatim}
+c-u 8 <command to repeated 8 times>
+c-u 8 c-n (move forward 8 lines)
+ \end{verbatim}
+ 
+ \subsection*{Stop a command}
+ 
+  \begin{verbatim}
+c-g: stop the current command
+ \end{verbatim}
+ 
+ \subsection*{Undo a command}
+ 
+  \begin{verbatim}
+c-x u: Undo previous command
+c-/ : The same (but easier)
+ \end{verbatim}
+ 
+\subsection*{Windows}
+  
+Whenever we split the screen into different areas, we refer to each region of the ``frame'' as a ``window.'' This means that multiple windows reside within a single frame. There are various command to manipulate windows.  
+  
+\begin{verbatim}
+c-x 0 : Delete current window
+c-x 3 : open window to the right
+c-x 2: open window below
+c-x 1 : close all windows except the one we are in
+c-x o : change to other buffer
+ \end{verbatim}
+ 
+\subsection*{Files and buffers}
+
+The ideas of a buffer is a place where we can stores some text, but this is not necassarily assciated with any file. So we could create a buffer, write some text in it and then delete it without ever creating a file. Buffers are fundamental to working with emacs, and here a few commands I have picked up
+
+To save a file just type
+\begin{verbatim}
+c-x c-s : Save file
+c-x c-w : Write to another location
+\end{verbatim}
+
+
+\begin{verbatim}
+c-x c-b : List all current buffers. 
+\end{verbatim}
+Sometimes confusingly, this opens a new window in our frame. If you are in the  buffer which is displaying all the current buffers, then you can quit the buffer by simply typing 'q'.
+\begin{verbatim}
+c-x c-f <filename> : open a file in a new buffer. You can use tab-completion here.
+c-x k <buffername> : kill a buffer
+c-x 4 b <buffername> : open a buffer in a new window
+m-x kill-some-buffers <RETURN>: this allows us to kill many buffers in succession
+\end{verbatim}
+
+\subsection*{Using the shell}
+We can use the shell from within emacs as follows:
+\begin{verbatim}
+m-x shell
+\end{verbatim}
+And then in the current window the shell will be shown. This is useful if we wish to execute commands like ``make'' or ``cmake''
+ 
+\subsection*{Copying and pasting}
+To cut a section of text first of all we must select the region by first typing
+\begin{verbatim}
+c-<spacebar> : and then moving to the point at which we end the selection
+\end{verbatim}
+We then cut the selection with 
+\begin{verbatim}
+c-w
+\end{verbatim}
+and paste with 
+\begin{verbatim}
+c-y
+\end{verbatim}
+
+\subsection{Deleting}
+\label{sec:deleting}
+
+Some nice commands for deleting text
+\begin{verbatim}
+c-x c-0 : delete every blank line except one
+m-d : delete words forward
+c-d : delete characters forward from current position
+\end{verbatim}
+
+\subsection{Searching}
+\label{sec:searching}
+
+\begin{verbatim}
+c-s : allows you to search for an item. Pressing the command again
+finds the next item
+c-r : backward incremental search
+\end{verbatim}
+To exit the search mode, just type return, or c-g.
+
+\subsubsection{Search and replace}
+\label{sec:search-replace}
+
+If we wish to search and replace items then we can type the following
+\begin{verbatim}
+m-x query-replace <stringToReplace> <RET> <newString> <RET>
+\end{verbatim}
+Then, to actually replace each item in turn, we can press the space
+bar. Instead, if we wish to replace all future occurences, simply type 
+\begin{verbatim}
+!
+\end{verbatim}
+\subsection*{Regions}
+\label{sec:regions}
+
+Emacs has a concept called a region which can be set manually using 
+\begin{verbatim}
+c-<spacebar>
+\end{verbatim}
+
+We can also see the current region by typing
+\begin{verbatim}
+c-x c-x
+\end{verbatim}
+
+
+\subsection*{Programming}
+
+To indent the current block of code using the appropriate format, type:
+\begin{verbatim}
+c-c c-q
+ \end{verbatim}
+ 
+ 
+\subsection*{Compiling}
+
+We can compile a program through emacs using the following command:
+\begin{verbatim}
+m-x compile
+ \end{verbatim}
+In the small buffer ``make -k'' will appear, but we can simply delete this and replace it with (for example) 
+\begin{verbatim}
+g++ -o main main.cpp
+ \end{verbatim}
+and this will be compiled within emacs.
+ 
+\subsection*{Inserting special characters}
+
+I'm not entirely sure this is a generasl emacs command, but to insert a tab character in aquamacs we must type
+\begin{verbatim}
+c-q <TAB>
+ \end{verbatim}
+which is particularly important for makefiles.  
+
+\subsection*{Uppercase and lowercase}
+\label{sec:uppercase-lowercase}
+
+To convert a word to lowercase
+\begin{verbatim}
+m-l
+\end{verbatim}
+and to upper case:
+\begin{verbatim}
+m-u
+\end{verbatim}
+
+ \section*{Auctex}
+ 
+This is feature which is installed with Aquamacs that allows some really rapid editing of latex documents. Here a few ones I have used in the past
+
+\subsection*{Setting up Aquamacs}
+There are few things which are not immediately obvious when using Auctex with aquamacs. Probably the first issue I came across was that auctex creates pdfs by default, while I prefer working with dvis (to allow the inclusion of eps files). In addition, I noticed that when I viewed files from aquamacs, the pdf was shown through Texshop. So what I did was to go to the following menu in Aquamacs
+\begin{verbatim}
+Latex -> Customize Auctex -> Browse options
+\end{verbatim}
+You will be presented with a file which allows you to change options, and this can be saved for all future sessions. The important ones I changes were ``Tex view program list'' (to just use Skim - a nice viewing program) and ``Tex Pdf mode'' which I switched to ``off''.
+
+\subsection*{Get Aquamacs to make dvi, convert to pdf and then open Skim}
+Hold press! I managed to find one line which seems to solve all my problems! What this line does is to convert the dvi to a pdf and then open this in Skim - a very nice viewing program. What we do in Aquamacs is to go into the customize page (as above) and navigate to ``Tex command'' and then find ``Tex command list''.  Under the sub-head ``latex'' we want to make sure that the values for ``command:'' is given as:
+\begin{verbatim}
+%`%l%(mode)%' %t && dvips -Ppdf %d -o && ps2pdf %f && open -a Skim.app %s.pdf
+\end{verbatim}
+
+And, if we wish to have the file update automatically after we have compiled latex, then go into the ``Preferences'' in Skim and check the box ``Check for file changes.''
+
+Now everything is set up perfectly for creating nice latex pdfs!
+
+We can also omit the commands after 'open' and simply set the default
+program to open dvi files as Skim in Mac OX.
+
+\subsection*{Change to pdf mode}
+\label{sec:change-pdf-mode}
+
+If we want to use latex in pdf mode (using png and pdf image files),
+we can type
+\begin{verbatim}
+c-c c-t c-p
+\end{verbatim}
+
+\subsection{Previewing}
+\label{sec:previewing}
+
+For equations and other items that might be hard to visualise by
+inspecting latex code, it is sometimes useful to perform a preview
+using the following command
+\begin{verbatim}
+c-c c-p c-p: preview at point
+c-c c-p c-s : section preview 
+c-c c-p c-b : buffer preview
+c-c c-p c-e : environment preview
+\end{verbatim}
+
+And we can remove buffers using the following commands
+\begin{verbatim}
+c-c c-p c-c c-d : remove preview from document
+c-c c-p c-c c-r : remove preview from region
+c-c c-p c-c c-b : remove preview from buffer
+\end{verbatim}
+
+
+
+\subsection*{Compiling and viewing}
+\begin{verbatim}
+c-c c-c LaTeX
+\end{verbatim}
+The text ``LaTeX'' can be filled in with auto-completion with the tab key, and it is the default option so when can usually just type return after the two control key commands.
+\begin{verbatim}
+c-c c-v : View the output file
+\end{verbatim}
+
+\subsection*{Environments}
+
+So if we want to include the commonly used ``\ begin{}'' and ``\ end{}'' syntax we can do this with 
+\begin{verbatim}
+c-c c-e Equation : inserts equation environment
+\end{verbatim}
+This can be used with other environments by pressing the tab key.
+
+A similar command exists for sections, parts, chapters etc.
+\begin{verbatim}
+c-c c-s Section: insert section  
+\end{verbatim}
+
+\subsection{Itemize}
+\label{sec:itemize}
+
+
+We can insert the item command if we are in an ``itemize'' environment
+by typing
+\begin{verbatim}
+c-c c-j
+\end{verbatim}
+
+
+\subsection{Spelling}
+\label{sec:spelling}
+
+Some spelling commands for emacs
+\begin{verbatim}
+m-$ : check spelling of existing word
+m-x ispell : check spelling of entire buffer
+m-x flyspell-mode : highlight all mispelt words
+\end{verbatim}
+
+\subsection*{Math environment}
+This is a really nice feature which allows us to type maths commands really fast. To start math mode, we type
+\begin{verbatim}
+c-c ~
+\end{verbatim}
+And then we can type a whole host of maths using commands like
+\begin{verbatim}
+`a == \alpha
+`b == \beta
+\end{verbatim}
+
+We exit math mode by typing the same command to start math mode.
+
+\subsection*{Reftex}
+
+If nothing seems to be working with reftex, then we might have to turn
+reftex on with 
+\begin{verbatim}
+m-x refex-mode <enter>
+\end{verbatim}
+And if reftex mode is not started automatically when opening a latex
+file (which seems to be the case with emacs on Ubuntu) then we can
+edit the .emacs file by adding the following lines
+\begin{verbatim}
+(add-hook 'LaTeX-mode-hook 'turn-on-reftex)   ; with AUCTeX LaTeX mode
+(add-hook 'latex-mode-hook 'turn-on-reftex)   ; with Emacs latex mode
+\end{verbatim}
+If we have included a bibtex file in our document, then we can insert a citation quickly by typing
+\begin{verbatim}
+c-c [ <search-term>
+\end{verbatim}
+Where we can search for a particular value to find the reference we want. Typing return will place the citation in the tex file.
+  
+I have found that sometimes this command does not work, and we may
+need to "reset the buffer" by typing the following:
+\begin{verbatim}
+c-c c-n : reset the buffer
+\end{verbatim}
+and the command should work now.
+
+And sometimes this still doesn't work, so I found that if we type
+\begin{verbatim}
+m-x reftex-parse-all
+\end{verbatim}
+I find that the the bib file is now seen.
+
+
+\subsubsection*{Automatically update the bibtex file}
+\label{sec:autom-update-bibt}
+
+If we are simultaneously working on the tex and bib files, we can end
+up in a situation where an update in the bib file is not seen by
+reftex. A solution to over come this is to open up the bib file in
+emacs, and then type 
+\begin{verbatim}
+m-x auto-revert-mode
+\end{verbatim}
+This will ensure that any updates are seen immediately. It should be
+noted that this is only an issue when editing the bib file using an
+external editor. 
+
+
+\subsubsection{Insert reference}
+\label{sec:insert-reference}
+
+If we wish to refer to a figure or section heading, then we can do
+this easily with 
+\begin{verbatim}
+c-c )
+\end{verbatim}
+and we should be shown a list of possible items we can use. Just by
+scrolling through these we can find the appropriate one we need and
+then hit enter. Pressing 'r' will also refresh the list.
+
+
+\subsection*{Table of contents}
+
+Simply type
+\begin{verbatim}
+c-c =
+\end{verbatim}
+and the table of contents will appear
+ 
+\subsection*{Macros}
+
+For inserting things like graphics quickly we can type
+\begin{verbatim}
+c-c <return>
+\end{verbatim}
+and then by using autocompletion (ie.the tab key), we can fill in a whole host of things like 
+\begin{verbatim}
+\includegraphics{figure1.eps}
+\end{verbatim}
+
+
+
+
+\end{document}

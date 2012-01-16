@@ -1,0 +1,8 @@
+*.dvi
+*.aux
+*.log
+*.prv
+*.ps
+*.rel
+*.synctex.gz
+_region*
