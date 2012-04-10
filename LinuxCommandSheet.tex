@@ -24,6 +24,21 @@ This document is merely a collection of the Linux commands that I have used in t
 \section*{Linux}
 
 \mytoprule
+\subsection*{Top}
+\label{sec:top}
+
+Typing
+\begin{verbatim}
+top
+\end{verbatim}
+in the command line gives you an interactive mode which shows all the
+running processes. If we wish to find a specific process, then we can
+run it in batch mode and pipe it into a grep command as follows:
+\begin{verbatim}
+top -b | grep firefox
+\end{verbatim}
+
+
 \subsection*{cd}
 Change to another directory. e.g. To change to a directory that is located from the root directory as documents/myfolder
 \begin{Verbatim}[commandchars=\\\{\}]
@@ -231,7 +246,117 @@ option is to simply run the following command in the build directory
 xargs rm < install_manifest.txt 
 \end{verbatim}
 
+\subsubsection*{CMake with Trilinos}
+\label{sec:cmake-with-trilinos}
 
+The Trilinos library provided by Sandia national laboratories in the
+U.S. provides a nice interface for dealing with serial and parallel
+processing of vector and matrices. There are several solver
+implementation provided in addition. But the purpose of this section
+is to how how we can create an executable which makes use of the
+Trilinos libraries. We create a CMakeLists.txt like this:
+\begin{verbatim}
+cmake_minimum_required( VERSION 2.8 )
+project( simpleVector )
+
+find_package( trilinos REQUIRED )
+include_directories( ${Trilinos_INCLUDE_DIRS} ${Trilinos_TPL_INCLUDE_DIRS} )
+link_directories( ${Trilinos_LIBRARY_DIRS} ${Trilinos_TPL_LIBRARY_DIRS} )
+
+add_executable( simpleVector main.cpp )
+target_link_libraries( simpleVector ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES} )
+
+enable_testing()
+add_test( NAME myTest COMMAND simpleVector )
+\end{verbatim}
+Then we can create a build like so:
+\begin{verbatim}
+mkdir build
+cd build
+ccmake <path to CMakeLists.txt file in source code>
+\end{verbatim}
+You will need to specifiy the path to the Trilinos build in ccmake. If
+this succeeds, we build by 
+\begin{verbatim}
+make
+\end{verbatim}
+
+\subsubsection{Setting up trilinos with CMake}
+\label{sec:setting-up-trilinos}
+
+Some of the numerical software that I develop with uses Trilinos, a
+library that provides a great host of classes dedicated to numerical
+solvers, complex numbers, parallel processing. But before the
+libraries can be used in a project, it is necessary to do some setup
+such as telling the project where the trilinos libraries and header
+files are installed. A script given to me by Mike Borden at ICES
+achieves just this:
+
+\begin{verbatim}
+EXTRA_ARGS=$@
+
+cmake \
+  -D CMAKE_BUILD_TYPE:STRING=Release \
+  -D Trilinos_ENABLE_DEFAULT_PACKAGES:BOOL=OFF \
+  -D Trilinos_ENABLE_ALL_OPTIONAL_PACKAGES:BOOL=OFF \
+  -D Trilinos_ENABLE_Epetra:BOOL=ON \
+  -D Trilinos_ENABLE_AztecOO:BOOL=ON \
+  -D Trilinos_ENABLE_NOX:BOOL=ON \
+  -D Trilinos_ENABLE_Ifpack:BOOL=ON \
+  -D Trilinos_ENABLE_ML:BOOL=ON \
+  -D Trilinos_ENABLE_Teuchos:BOOL=ON \
+  -D Trilinos_ENABLE_Triutils:BOOL=ON \
+  -D NOX_ENABLE_LAPACK:BOOL=ON \
+  -D NOX_ENABLE_Epetra:BOOL=ON \
+  -D Trilinos_ENABLE_EpetraExt:BOOL=ON \
+  -D Trilinos_ENABLE_Amesos:BOOL=ON \
+  -D Amesos_ENABLE_SuperLU:BOOL=ON \
+  -D SuperLU_INCLUDE_DIRS:PATH="/org/groups/hughes/opt/lin/SuperLU_4.0/include" \
+  -D TPL_SuperLU_LIBRARIES:PATH="/org/groups/hughes/opt/lin/SuperLU_4.0/lib/libsuperlu_4.0.a" \
+  -D CMAKE_INSTALL_PREFIX:PATH="/org/groups/hughes/opt/lin/trilinos-10.4.1" \
+  $EXTRA_ARGS
+\end{verbatim}
+
+where the last three directories must be changed to point to the
+SuperLU header file directory, the SuperLU library directory and the
+trilinos installation directory.
+
+In addition, Mike also passed me a parallel version of this script:
+\begin{verbatim}
+EXTRA_ARGS=$@
+
+cmake \
+  -D CMAKE_BUILD_TYPE:STRING=Release \
+  -D Trilinos_ENABLE_DEFAULT_PACKAGES:BOOL=OFF \
+  -D Trilinos_ENABLE_ALL_OPTIONAL_PACKAGES:BOOL=OFF \
+  -D Trilinos_ENABLE_Epetra:BOOL=ON \
+  -D Trilinos_ENABLE_AztecOO:BOOL=ON \
+  -D Trilinos_ENABLE_NOX:BOOL=ON \
+  -D Trilinos_ENABLE_Ifpack:BOOL=ON \
+  -D Trilinos_ENABLE_ML:BOOL=ON \
+  -D Trilinos_ENABLE_Teuchos:BOOL=ON \
+  -D Trilinos_ENABLE_Triutils:BOOL=ON \
+  -D NOX_ENABLE_LAPACK:BOOL=ON \
+  -D NOX_ENABLE_Epetra:BOOL=ON \
+  -D Trilinos_ENABLE_EpetraExt:BOOL=ON \
+  -D Trilinos_ENABLE_Amesos:BOOL=ON \
+  -D TPL_ENABLE_MPI:BOOL=ON \
+  -D MPI_BASE_DIR:PATH="/org/groups/hughes/opt/lin/openmpi-1.4.2" \
+  -D CMAKE_INSTALL_PREFIX:PATH="/org/groups/hughes/opt/lin/trilinos-10.4.1-mpi" \
+  $EXTRA_ARGS
+\end{verbatim}
+
+If the script is named "trilinosSetup", then first ensure the script
+is executable ( e.g. chmod 700 trilinosSetup) and then run it as
+./trilinosSetup <path to build directory of your code>
+
+\subsubsection{Using custom libraries with no .cmake package files}
+\label{sec:using-cust-libr}
+
+\subsection*{qmake}
+\label{sec:qmake}
+
+qmake is the 
 
 \subsection*{nm}
 Used to inspect an object file
@@ -248,7 +373,7 @@ If we wish to find out if a particular function is taking a lot of cycles in our
 \begin{verbatim}
 g++ -Wall -pg -c main.cpp 
 \end{verbatim}
-This will compile the file. We then create the executable:
+This will compile the file. We then create the executable:L
 \begin{verbatim}
 g++ -Wall -pg -o main main.o
 \end{verbatim}
@@ -989,6 +1114,11 @@ git pull isobem master
 which merges the branch on the server (isobem) into the current
 working branch. 
 
+We can pull all the branches from the remote by issuing the following
+command 
+\begin{verbatim}
+git pull --all
+\end{verbatim}
 
 \subsection*{remote branches}
 \begin{Verbatim}
@@ -1521,7 +1651,20 @@ m-> : Move to end of file
 c-u 8 <command to repeated 8 times>
 c-u 8 c-n (move forward 8 lines)
  \end{verbatim}
- 
+
+\subsubsection*{Repeat previous command}
+\label{sec:repe-prev-comm}
+
+To repeat the previous command, type 
+\begin{verbatim}
+c-x z
+\end{verbatim}
+If we wish to repeat say the previous command three times, then we
+simply keep typing z. e.g.
+\begin{verbatim}
+c-x z z z 
+\end{verbatim}
+
  \subsection*{Stop a command}
  
   \begin{verbatim}
