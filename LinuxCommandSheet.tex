@@ -1476,6 +1476,82 @@ This will delete the contents of the file 'fileToDeleteContents.txt'
 
 Simply type Alt + F2 and you will be there!
 
+\section*{Apache web server (ubuntu)}
+\label{sec:apache-web-server}
+
+\subsection*{Restart or reload}
+\label{sec:restart-or-reload}
+
+We restart apache as follows
+\begin{verbatim}
+sudo /etc/init.d/apache2 restart
+\end{verbatim}
+and likewise, to reload
+\begin{verbatim}
+sudo /etc/init.d/apache2 reload
+\end{verbatim}
+
+
+\subsection*{Configuration}
+\label{sec:configuration}
+
+If we wish to have apache point to another directory on our server
+which contains the web pages, then we must create a file in the
+directory
+\begin{verbatim}
+/etc/apache2/sites-available/
+\end{verbatim}
+The easiest way is to simply copy the default file as
+\begin{verbatim}
+cp /etc/apache2/sites-available/default /etc/apache2/sites-available/mysite
+\end{verbatim}
+
+An example of this file is as follows:
+\begin{verbatim}
+<VirtualHost *:80>
+	ServerAdmin webmaster@localhost
+
+	DocumentRoot /home/robert/Public/robsite/
+	<Directory />
+		Options FollowSymLinks
+		AllowOverride None
+	</Directory>
+	<Directory /home/robert/Public/robsite/>
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride None
+		Order allow,deny
+		allow from all
+	</Directory>
+
+	ScriptAlias /cgi-bin/ /usr/lib/cgi-bin/
+	<Directory "/usr/lib/cgi-bin">
+		AllowOverride None
+		Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+		Order allow,deny
+		Allow from all
+	</Directory>
+
+	ErrorLog /var/log/apache2/error.log
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel warn
+
+	CustomLog /var/log/apache2/access.log combined
+
+    Alias /doc/ "/usr/share/doc/"
+    <Directory "/usr/share/doc/">
+        Options Indexes MultiViews FollowSymLinks
+        AllowOverride None
+        Order deny,allow
+        Deny from all
+        Allow from 127.0.0.0/255.0.0.0 ::1/128
+    </Directory>
+
+</VirtualHost>
+\end{verbatim}
+where this configuration file tells Apache to look in the directory /home/robert/Public/robsite
+
 \section*{GPU programming}
 
 \subsection*{Installation of CUDA}
