@@ -79,6 +79,27 @@ process), we can type
 tail -f <name-of-file>
 \end{verbatim}
 
+
+\subsection*{find}
+\label{sec:find}
+
+The find command allows us to to search for files in a directory
+hierarchy. Perhaps most simply, this can be run as
+\begin{verbatim}
+find -iname "mycprogram.c"
+\end{verbatim}
+which will search in this directory and any subdirectories for the
+file. There are many other options available, including the ability to
+search for files over a certain size e.g.
+\begin{verbatim}
+find ~ -size +100M 
+\end{verbatim}
+which will find all files over 100Mb in size. Likewise, 
+\begin{verbatim}
+find ~ -size -100M
+\end{verbatim}
+will find all files less that 100Mb.
+
 \subsection*{Output to screen and file}
 \label{sec:output-screen-file}
 
