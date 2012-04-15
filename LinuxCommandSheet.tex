@@ -557,7 +557,22 @@ then we can type the following command
 which will list all sorts of details about the licence. 
 \mybotrule
 
-\mytoprule
+\subsection*{ssh from other compter}
+\label{sec:ssh-from-other}
+
+Sometimes it is uesful to login to matlab from another computer to
+start a relevant job. One strategy is to create a bash shell script
+file which will open up matlab, run a job and then save the output to
+a file. However, if screen forwarding is enabled, then matlab can be
+invoked using the following command which will bring up a GUI of the
+matlab interface:
+\begin{verbatim}
+ssh -X user@computer_address
+<enter password>
+matlab
+\end{verbatim}
+
+
 \subsection*{find}
 A very useful command that, on its own will return a matrix of all the nonzero indicies of a matrix. eg. 
 \begin{Verbatim}[commandchars=\\\{\}]
