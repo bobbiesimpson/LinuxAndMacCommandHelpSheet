@@ -477,6 +477,15 @@ To inspect the contents of a tarball, simply type
 tar ztvf folderToInspect.tar.gz
 \end{verbatim}
 
+\subsubsection*{Exclude files}
+\label{sec:exclude-files}
+
+To exclude files or directories from the tar command, use the
+following command
+\begin{verbatim}
+tar -zcvf --exclude="excludeFile.txt" compressedFolder.tar.gz folderToCompress/
+\end{verbatim}
+
 \subsection*{Diff}
 \label{sec:diff}
 
