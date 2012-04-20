@@ -1719,6 +1719,25 @@ to
 GtkRange::trough-under-steppers = 1.
 \end{verbatim}
 
+\subsubsection{Adding python customisation}
+\label{sec:adding-pyth-cust}
+
+There are a variety of ways to customise emacs for different
+environments such as various programming language. I set up Ubuntu to
+use a specific customisation for python by downloading a file called
+``python-mode.el''. I created a directory called ``elisp'' like so:
+\begin{verbatim}
+mkdir ~/elisp
+\end{verbatim}
+and put the ``.el'' file in this directory. Then, by adding the
+following few lines at the end of my ``init.el'' file (see above) as:
+\begin{verbatim}
+(add-to-list 'load-path' "home/robert/elisp/")
+(setq py-install-directory "home/robert/elisp/")
+(require 'python-mode')
+\end{verbatim}
+when I start up a python file in emacs the correct formatting will appear.
+
 
 
 \subsection*{Aquamacs customisation}
