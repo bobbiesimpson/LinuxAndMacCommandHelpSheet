@@ -788,7 +788,7 @@ ipp://131.251.176.142/printers/HP_LaserJet_P2055dn
 \item Click continue and then type in a name (something like ``RobsAmazingPrinter'') and a description (like ``HP Laser jet which is controlled by Rob'') and location (``Room 2.14'').
 \item Click continue and then go through the options to first select ``HP'' as the printer make and ``HP LaserJet 2055 duplexer'' as the printer
 \item Click ``add printer'' and then click ``set default options''
-\item Print a test page to see if it works. And if not, get in contact with me (robertnsimpson@gmail.com) 
+\item Print a test page to see if it works. And if not, get in contact with me (dummyemailaddress@dummy.dom) 
 \end{enumerate}
 
 \mybotrule
@@ -989,7 +989,7 @@ When we first use git on our machine we need to set up certain user
 defaults for the user email and username. To do this, we type
 \begin{verbatim}
 git config --global user.name = "Rob Simpson"
-git config --global user.email = "robertsimpson@gmail.com"
+git config --global user.email = "dummyemailaddress@dummy.dom"
 \end{verbatim}
 And to see if our changes are correct, type
 \begin{verbatim}
@@ -1353,7 +1353,7 @@ in bash. Then we can create a lines as follows:
 0 13 * * * ~/Documents/backup.sh >> ~/Documents/backupLogfile.log 2>&1
 \end{Verbatim}
 This executes the script backup at the first minute of 1300 everyday and appends the results to a logfile. There is also an additional command at the end ``2$>$\&1'' which means that standard error output is directed into standard output. The flags for standard input/output are as follows:
-\begin{table}[htdp]
+\begin{table}[htp]
 \caption{Std input/output flags}
 \begin{center}
 \begin{tabular}{|c|c|}
@@ -1471,14 +1471,14 @@ ssh user@server.com
 
 \subsection*{Creating alias for ssh}
 
-Rather than having to type in ``ssh robert@131.251.176.142'' we can create an alias instead. Open, or create the file 
+Rather than having to type in ``ssh robert@199.251.176.142'' we can create an alias instead. Open, or create the file 
 \begin{verbatim}
 ~/.ssh/config
 \end{verbatim}
 Then add the following lines (for example)
 \begin{verbatim}
 Host=linuxBox
-Hostname=131.251.176.142
+Hostname=199.251.176.142
 User=robert
 \end{verbatim}
 We can then connect simply by typing
@@ -2155,3 +2155,8 @@ and then by using autocompletion (ie.the tab key), we can fill in a whole host o
 
 
 \end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
